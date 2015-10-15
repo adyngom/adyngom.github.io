@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slides</title>
+  <style>
+    *,
+    *:before,
+    *:after {
+      box-sixing: border-box;
+    }
+    section div{
+      -webkit-transition: all 2s ease-out;
+    }
+    section div:not(:first-child) {
+      -webkit-transition: all 2s ease-out;
+      opacity: 1;
+    }
+    
+    img {  
+      max-width: 100%;
+      max-height: 472px;
+    }
+    #slider {
+      height: 472px; 
+      margin: 0px auto;
+      width: 472px;
+      border: 2px solid #ccc;
+    }
+    .scroller div {
+      float: left;
+      width: 472px;
+    }
+  </style>
+</head>
+<body>
+  <section id="slider">
+    
+    <div class="red">
+      <img src="images/1.jpg" alt="">
+    </div>
+
+    <div class="green">
+      <img src="images/2.jpg" alt="">
+    </div>
+    <div class="yellow">
+      <img src="images/3.jpg" alt="">
+    </div>
+    <div class="blue">
+      <img src="images/4.jpg" alt="">
+    </div>
+  </section>
+
+<div>
+<button id="prev">Prev</button> <button id="next">Next</button>
+</div>
+
+<script src="Sliderr.js"></script>
+<script>
+  window.onload = function(evt) {
+
+    window.slider = new Sliderr(0,"slider", {slidetime:1000, slideshow:false});
+
+    var Fader = {
+      init: function() {
+        var _self = this._el;
+      },
+      next: function () {
+        this.slides[this.lastSlide].style.opacity = 0;
+        this.slides[slider._index].style.opacity = 1;
+      },
+      prev: function () {
+        this.slides[this.lastSlide].style.opacity = 0;
+        this.slides[slider._index].style.opacity = 1;
+      },
+      slide: function() {
+        
+      }
+    };
+
+    var Scroller = {
+      init: function() {
+        var that = cSlide = this;
+        wrapper = this.wrapper = document.createElement("div");
+        wrapper.style["height"] = "400px;";
+        wrapper.innerHTML = this._el.innerHTML;
+        wrapper.className = "scroller";
+        this._el.innerHTML = "";
+        this.startMargin = 0; 
+        this.wrapper.style.marginLeft = -this.slideWidth+"px"; 
+       // Scroller.reset();  
+        this.currSlide = 1;
+        this._el.appendChild(wrapper);
+        this.slides = this.wrapper.children;
+        var firstSlide = this.slides[0].cloneNode(true),
+            lastSlide = this.slides[this.slides.length - 1].cloneNode(true);
+        //console.log(slideSet);
+        // prepend the last slide to the beginning
+        wrapper.insertBefore(lastSlide, wrapper.firstChild);
+        // append the first slide to the end    
+        wrapper.appendChild(firstSlide);
+        this.oldLen = this.len;
+        this.len = wrapper.children.length;
+        wrapper.style["width"] = (this.slideWidth * this.len)+"px";
+        this._el.style.position = "relative";
+        this._el.style.overflow = "hidden";
+        wrapper.addEventListener("transitionend", _endAnim, true);
+
+        function _endAnim(w) {
+          //console.log(w);
+          var that = cSlide;
+          console.log(cSlide.currSlide);
+          if(that.currSlide >= ( that.len - 1 )) {
+            Scroller.reset("first");
+            that.startMargin = 0;
+            that.currSlide = 1;
+          }
+          if(that.currSlide <= 0) {
+          //alert("backward");
+            Scroller.reset("last");
+            that.startMargin = -( (that.oldLen -1) * that.slideWidth);
+            that.currSlide = that.oldLen;
+          }
+        }
+      },
+      next: function() {
+        ++this.currSlide;
+        this.startMargin -= this.slideWidth;
+        this.wrapper.style.webkitTransform = "translate3d("+this.startMargin+"px, 0, 0)";
+      },
+      prev: function() {
+        --this.currSlide;
+        this.startMargin += this.slideWidth;
+        this.wrapper.style.webkitTransform = "translate3d("+this.startMargin+"px, 0, 0)";
+      },
+      reset: function(pos) {
+        wrapper.style.webkitTransition = "all 0s";
+        var _pos = (!!pos) ? pos : "first",
+            that = cSlide;
+        switch(_pos) {
+          case "first":
+            _resetPos(0);
+          break;
+          case "last":
+            _resetPos(-( (that.oldLen - 1) * that.slideWidth));
+          break
+          default:
+            _resetPos();
+          break;
+        }
+
+        function _resetPos(_pos) {
+          wrapper.style.webkitTransform = "translate3d("+_pos+"px,0,0)";
+          setTimeout(function() {
+            wrapper.style.webkitTransition = "all 0.65s ease-in";
+          }, 0);
+        } 
+      }
+    }
+
+    slider.addAnimation("fader", Fader);
+    slider.addAnimation("scroller", Scroller);
+    slider.setAnimation("scroller");
+    var addControls = slider.slideControls(),
+        controls = ["buttons", "keyboard"];
+
+    addControls["keyboard"]();
+
+    var buttons = document.querySelectorAll("button");
+
+    [].slice.call(buttons).forEach(function(button) {
+      button.addEventListener("click", function() {
+
+        var thisId = this.id,
+            zIndex = 1;
+
+        switch(thisId) {
+          case("next"):
+            slider.slidePause();
+            slider.slideNext();
+            
+            //slider.slides[slider._index].style.zIndex += zIndex; 
+          break;
+
+          case("prev"):
+           slider.slidePause(); 
+           slider.slidePrev(); 
+          break;
+
+          default: 
+          break;
+        }
+
+      }, false);
+    });  
+
+    if(!!slider.options.slideshow) {
+      slider.slideShow();
+    }
+  }
+</script>
+</body>
+</html>
